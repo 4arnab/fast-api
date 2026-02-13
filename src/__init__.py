@@ -1,10 +1,26 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from src.reviews.routes import reviews_router
 from src.books.routes import books_router
+from src.config import Config
+from src.db.main import init_db
 
-app = FastAPI(title="Book API", description="A simple API to manage books", version="1.0.0")
+@asynccontextmanager
+async def life_span(app:FastAPI):
+    print("Starting up...")
+    await init_db()
+    print(Config.DATABASE_URL)
+    yield
+    print("Finished startup")
+
+app = FastAPI (
+    title="Book API", 
+    description="A simple API to manage books", 
+    version="1.0.0", 
+    lifespan=life_span
+)
 
 app.add_middleware(
     CORSMiddleware,
